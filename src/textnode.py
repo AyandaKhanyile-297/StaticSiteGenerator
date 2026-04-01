@@ -1,12 +1,30 @@
 from enum import Enum
+from htmlnode import LeafNode
 
+def text_node_to_html_node(text_node):
+    match text_node.text_type:
+        case TextType.TEXT:
+            return LeafNode(None, text_node.text)
+        case TextType.BOLD:
+            return LeafNode("b", text_node.text)
+        case TextType.ITALIC:
+            return LeafNode("i", text_node.text)
+        case TextType.CODE:
+            return LeafNode("code", text_node.text)
+        case TextType.LINKS:
+            return LeafNode("a", text_node.text, {"href":text_node.url})
+        case TextType.IMAGES:
+            return LeafNode("img", "", {"src":text_node.url, "alt":text_node.text})
+        case _:
+            raise ValueError("Invalid type!")
+            
 class TextType(Enum):
-    PLAIN = "plain"
-    BOLD = "bold"
-    ITALIC = "italic"
+    TEXT = ""
+    BOLD = "b"
+    ITALIC = "i"
     CODE = "code"
-    LINKS = "link"
-    IMAGES = "image"
+    LINKS = "a"
+    IMAGES = "img"
     
 class TextNode:
     def __init__(self, text, text_type, url=None):
