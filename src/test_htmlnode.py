@@ -1,7 +1,8 @@
 import unittest
 
-from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimiter
+from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
+from extrator import text_node_to_html_node
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html(self):
@@ -106,29 +107,5 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.tag, "a")
         self.assertEqual(html_node.value, "This is a link node")
     #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
-    def test_spliter(self):
-        node = TextNode("This is text with a `code block` word", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-        act_nodes = [TextNode("This is text with a ", TextType.TEXT),
-            TextNode("code block", TextType.CODE),
-            TextNode(" word", TextType.TEXT)]
-        self.assertEqual(new_nodes[0], act_nodes[0])
-        self.assertEqual(new_nodes[1], act_nodes[1])
-    
-    def test_spliter_one_tag(self):
-        node = TextNode("This is text with a `code block word", TextType.TEXT)
-        with self.assertRaises(Exception) as cm:
-            new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-        self.assertEqual(str(cm.exception), "No closing delimiter")
         
-    def test_spliter_two_tag(self):
-        node = TextNode("This is `code` and more `code` here", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-        act_nodes = [TextNode("This is ", TextType.TEXT),
-            TextNode("code", TextType.CODE),
-            TextNode(" and more ", TextType.TEXT),
-            TextNode("code", TextType.CODE),
-            TextNode(" here", TextType.TEXT)]
-        self.assertEqual(len(new_nodes), len(act_nodes))
-    #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
     
