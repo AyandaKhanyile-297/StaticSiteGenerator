@@ -101,7 +101,7 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.value, "This is an italic text node")
     
     def test_text(self):
-        node = TextNode("This is a link node", TextType.LINKS)
+        node = TextNode("This is a link node", TextType.LINK)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "a")
         self.assertEqual(html_node.value, "This is a link node")
