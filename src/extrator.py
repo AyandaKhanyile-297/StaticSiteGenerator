@@ -1,6 +1,6 @@
 
 import re
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, BlockType
 from htmlnode import LeafNode
 
 DELIMETER = {"**":TextType.BOLD, "_":TextType.ITALIC, "`":TextType.CODE}
@@ -105,5 +105,67 @@ def text_to_textnodes(text):
  
     return final_nodes
     
+def markdown_to_blocks(markdown):
+    rawblocks = markdown.split("\n\n")
+    final_blocks = []
+    for block in rawblocks:
+        new_block = block.removeprefix("\n")
+        new_block = new_block.strip()
+        final_blocks.append(new_block)
+    return final_blocks
+    
+def block_to_block_type(markdown):    
+    raw_block = (markdown_to_blocks(markdown))[0]
+    if _is_heading(raw_block):
+        return BlockType.HEADING
+    elif _is_code(raw_block):
+        return BlockType.CODE
+    elif _is_quote(raw_block):
+        return BlockType.QUOTE
+    elif _is_unordered_list(raw_block):
+        return BlockType.UNORDERED_LIST
+    elif _is_ordered_list(raw_block):
+        return BlockType.ORDERED_LIST
+    else:
+        return BlockType.PARAGRAPH
+        
+def _is_heading(block_text):
+    heading_tag = "#"
+    for i in range(6):
+        if block_text.startswith(f"{heading_tag} "):
+            return True
+        heading_tag += "#"
+    return False
 
+def _is_code(block_text):
+    code_tag = "```"
+    if block_text.startswith(f"{code_tag}\n"):
+        if block_text.endswith(code_tag):
+            return True
+    return False
+    
+def _is_quote(block_text):
+    quote_tag = ">"
+    all_quotes = False
+    for quotes in block_text.split("\n"):
+        if (quotes.startswith(f"{quote_tag}")) or (quotes.startswith(f"{quote_tag} ")):
+            all_quotes = True
+    return all_quotes
+    
+def _is_unordered_list(block_text):
+    ul_tag = "- "
+    u_list = True
+    for ul_items in block_text.split("\n"):
+        if not (ul_items.startswith(f"{ul_tag}")):
+            u_list =  False
+    return u_list
+    
+def _is_ordered_list(block_text):
+    o_list = True
+    raw_list = block_text.split("\n")
+    for ol_items in range(len(raw_list)):
+        ol_tag = f"{ol_items+1}."
+        if not (raw_list[ol_items].startswith(ol_tag)):
+            o_list =  False
+    return o_list
     

@@ -1,8 +1,9 @@
 import unittest
 
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, BlockType
 from extrator import extract_markdown_images, extract_markdown_links, text_node_to_html_node
 from extrator import split_nodes_image, split_nodes_link, split_nodes_delimiter, text_to_textnodes
+from extrator import markdown_to_blocks, block_to_block_type
 
 class TestExtrator(unittest.TestCase):
     def test_spliter(self):
@@ -139,5 +140,95 @@ class TestExtrator(unittest.TestCase):
                     TextNode("link", TextType.LINK, "https://boot.dev"),
                 ]
         self.assertListEqual(answer, result)
+    #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+    #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
+    def test_blockParagraph(self):
+        md = """
+This is a paragraph
+"""
+        self.assertEqual(BlockType.PARAGRAPH ,block_to_block_type(md))
+        
+    def test_blockHeadings1(self):
+        md = """
+# This is a heading
+"""
+        self.assertEqual(BlockType.HEADING ,block_to_block_type(md))
+        
+    def test_blockHeadings2(self):
+        md = """
+##### This is also heading
+"""
+        self.assertEqual(BlockType.HEADING ,block_to_block_type(md))
+        
+    def test_blockHeadings3(self):
+        md = """
+###### This is still a heading
+"""
+        self.assertEqual(BlockType.HEADING ,block_to_block_type(md))
+        
+    def test_blockHeadings4(self):
+        md = """
+####### This is not heading
+"""
+        self.assertNotEqual(BlockType.HEADING ,block_to_block_type(md))
+        
+    def test_blockCode(self):
+        md = """
+```
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+```
+"""
+        self.assertNotEqual(BlockType.CODE,block_to_block_type(md))
+    
+    def test_blockQuote1(self):
+        md = """
+>This is a quote
+"""
+        self.assertEqual(BlockType.QUOTE,block_to_block_type(md))
+        
+    def test_blockQuote2(self):
+        md = """
+> This is also a quote
+>surely
+"""
+        self.assertEqual(BlockType.QUOTE,block_to_block_type(md))
+    
+    def test_blockUnorderedList(self):
+        md = """
+- This is a list
+- with items
+"""
+        self.assertEqual(BlockType.UNORDERED_LIST,block_to_block_type(md))
+      
+    def test_blockOrderedList(self):
+        md = """
+1. This is a list
+2. with exactly 
+3. 3 items
+"""
+        self.assertEqual(BlockType.ORDERED_LIST,block_to_block_type(md))
+      
     #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
     

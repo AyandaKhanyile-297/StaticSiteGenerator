@@ -1,5 +1,13 @@
 from enum import Enum
-                       
+         
+class BlockType(Enum):
+    PARAGRAPH = "p"
+    HEADING = "h"
+    CODE = "code"
+    QUOTE = "q"
+    UNORDERED_LIST = "ul"
+    ORDERED_LIST = "ol"
+    
 class TextType(Enum):
     TEXT = ""
     BOLD = "b"
@@ -7,7 +15,7 @@ class TextType(Enum):
     CODE = "code"
     LINK = "a"
     IMAGE = "img"
-    
+        
 class TextNode:
     def __init__(self, text, text_type, url=None):
         self.text = text
