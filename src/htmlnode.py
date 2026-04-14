@@ -15,7 +15,7 @@ class HTMLNode:
         return result
         
     def __repr__(self):
-        return f"Tag:{self.tag} Value:{self.value} Children={self.children} Props={self.props_to_html()}"
+        return f"Tag:{self.tag} Value:{self.value} Children={self.children} Props:{self.props_to_html()}"
 
     def to_html(self):
         raise NotImplementedError("Override")
@@ -51,7 +51,7 @@ class LeafNode(HTMLNode):
                 return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
     def __repr__(self):
-        return f"Tag:{self.tag} Value:{self.value} Props={self.props_to_html()}"
+        return f"LeafNode(Tag:{self.tag} Value:{self.value} Props:{self.props_to_html()})"
 
 
 

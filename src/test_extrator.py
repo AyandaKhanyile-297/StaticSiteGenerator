@@ -3,7 +3,7 @@ import unittest
 from textnode import TextNode, TextType, BlockType
 from extrator import extract_markdown_images, extract_markdown_links, text_node_to_html_node
 from extrator import split_nodes_image, split_nodes_link, split_nodes_delimiter, text_to_textnodes
-from extrator import markdown_to_blocks, block_to_block_type
+from extrator import markdown_to_blocks, block_to_block_type, markdown_to_html_node
 
 class TestExtrator(unittest.TestCase):
     def test_spliter(self):
@@ -141,7 +141,33 @@ class TestExtrator(unittest.TestCase):
                 ]
         self.assertListEqual(answer, result)
     #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
-    def test_markdown_to_blocks(self):
+    def test_mdPPLC_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is some list
+- with some items
+
+```
+This is a paragraph with _italic_ text and `code` here and **bolded** text here
+This is the same paragraph on a new line
+```
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is some list\n- with some items",
+                "```\nThis is a paragraph with _italic_ text and `code` here and **bolded** text here\nThis is the same paragraph on a new line\n```"
+            ]
+        )
+        
+    def test_mdPPL_to_blocks(self):
         md = """
 This is **bolded** paragraph
 
@@ -200,7 +226,7 @@ This is the same paragraph on a new line
 
 ```
 """
-        self.assertNotEqual(BlockType.CODE,block_to_block_type(md))
+        self.assertEqual(BlockType.CODE,block_to_block_type(md))
     
     def test_blockQuote1(self):
         md = """
@@ -231,4 +257,44 @@ This is the same paragraph on a new line
         self.assertEqual(BlockType.ORDERED_LIST,block_to_block_type(md))
       
     #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   #    
+    def test_markdown_to_html_node_1(self):
+        markdown = """This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+This is text with a link [to boot dev](https://www.boot.dev) an image ![second image](https://i.imgur.com/3elNhQu.png)
+
+""" 
+        answer = "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here This is text with a link <a href=https://www.boot.dev>to boot dev</a> an image <img src=https://i.imgur.com/3elNhQu.png alt=second image></img></p></div>"
+        self.assertEqual((markdown_to_html_node(markdown)).to_html(), answer)
     
+    def test_markdown_to_html_node_2(self):
+        markdown = """
+This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)
+
+> And this is a qoute
+
+### Hastag Headings
+
+- This is some list
+- with some items
+""" 
+        answer = "<div><p>This is text with an <img src=https://i.imgur.com/zjjcJKZ.png alt=image></img> and another <img src=https://i.imgur.com/3elNhQu.png alt=second image></img></p><blockquote> And this is a qoute</blockquote><h3> Hastag Headings</h3><ul><li>This is some list</li><li>with some items</li></ul></div>"
+        self.assertEqual((markdown_to_html_node(markdown)).to_html(), answer)
+    
+    def test_markdown_to_html_node_3(self):
+        markdown = """
+```
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+```
+
+1. This is a list
+2. with exactly 
+3. 3 items
+""" 
+        answer = "<div><pre><code>This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line\n</code></pre><ol><li>1. This is a list</li><li>2. with exactly </li><li>3. 3 items</li></ol></div>"
+        self.assertEqual((markdown_to_html_node(markdown)).to_html(), answer)
+          
+    #=====  =====   =====  =====   =====  =====   =====  =====   =====  =====   # 

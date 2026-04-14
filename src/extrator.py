@@ -1,10 +1,11 @@
 
 import re
 from textnode import TextNode, TextType, BlockType
-from htmlnode import LeafNode
+from htmlnode import LeafNode, ParentNode
 
 DELIMETER = {"**":TextType.BOLD, "_":TextType.ITALIC, "`":TextType.CODE}
 
+#Converts a Textnode into an HTMLnode (LeafNode) with the same TextType
 def text_node_to_html_node(text_node):
     match text_node.text_type:
         case TextType.TEXT:
@@ -22,6 +23,7 @@ def text_node_to_html_node(text_node):
         case _:
             raise ValueError("Invalid type!")
 
+#Splits a list of Textnodes with the same TextType into a list of TextNodes with categorized TextTypes -> Helper
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for node in old_nodes:
@@ -34,7 +36,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             else:
                 for i in range(len(nodes_list)):
                     if i%2 == 0:
-                            new_nodes.append(TextNode(nodes_list[i], TextType.TEXT))
+                            new_nodes.append(TextNode(nodes_list[i].replace("\n"," "), TextType.TEXT))
                     else:
                         if delimiter=="**":
                             new_nodes.append(TextNode(nodes_list[i], TextType.BOLD))
@@ -44,14 +46,17 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                             new_nodes.append(TextNode(nodes_list[i], TextType.CODE)) 
     return new_nodes
 
+#Returns a list of images in a given text -> Helper
 def extract_markdown_images(text):
     matches = re.findall(r"!\[(.*?)\]\((.*?)\)", text)
     return matches
         
+#Returns a list of links in a given text -> Helper
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
     return matches
     
+#Returns a list of extracted images TextNodes -> Helper
 def split_nodes_image(old_nodes):
     new_nodes = []
     for node in old_nodes:
@@ -73,6 +78,7 @@ def split_nodes_image(old_nodes):
                     new_nodes.append(TextNode(new_text, TextType.TEXT))
     return new_nodes
             
+#Returns a list of extracted links TextNodes -> Helper
 def split_nodes_link(old_nodes):
     new_nodes = []
     for node in old_nodes:
@@ -94,6 +100,7 @@ def split_nodes_link(old_nodes):
                     new_nodes.append(TextNode(new_text, TextType.TEXT))
     return new_nodes
     
+#Converts text into TextNodes
 def text_to_textnodes(text):
     final_nodes = [TextNode(text, TextType.TEXT)]
     
@@ -105,30 +112,33 @@ def text_to_textnodes(text):
  
     return final_nodes
     
+#Separates markdown text into distinct blocks -> Helper
 def markdown_to_blocks(markdown):
     rawblocks = markdown.split("\n\n")
     final_blocks = []
     for block in rawblocks:
-        new_block = block.removeprefix("\n")
-        new_block = new_block.strip()
-        final_blocks.append(new_block)
+        new_block = block.strip()
+        if (new_block!="") and (new_block !="\n"):
+            final_blocks.append(new_block)
     return final_blocks
     
-def block_to_block_type(markdown):    
-    raw_block = (markdown_to_blocks(markdown))[0]
-    if _is_heading(raw_block):
+# Returns the type of block the markdown is
+def block_to_block_type(markdown):
+    markdown = markdown_to_blocks(markdown)[0]
+    if _is_heading(markdown):
         return BlockType.HEADING
-    elif _is_code(raw_block):
+    elif _is_code(markdown):
         return BlockType.CODE
-    elif _is_quote(raw_block):
+    elif _is_quote(markdown):
         return BlockType.QUOTE
-    elif _is_unordered_list(raw_block):
+    elif _is_unordered_list(markdown):
         return BlockType.UNORDERED_LIST
-    elif _is_ordered_list(raw_block):
+    elif _is_ordered_list(markdown):
         return BlockType.ORDERED_LIST
     else:
         return BlockType.PARAGRAPH
         
+# markdown_to_blocks -> Helper
 def _is_heading(block_text):
     heading_tag = "#"
     for i in range(6):
@@ -137,13 +147,14 @@ def _is_heading(block_text):
         heading_tag += "#"
     return False
 
+# markdown_to_blocks -> Helper
 def _is_code(block_text):
     code_tag = "```"
-    if block_text.startswith(f"{code_tag}\n"):
-        if block_text.endswith(code_tag):
+    if block_text.startswith(f"{code_tag}") or block_text.startswith(f"{code_tag}\n"):
             return True
     return False
     
+# markdown_to_blocks -> Helper
 def _is_quote(block_text):
     quote_tag = ">"
     all_quotes = False
@@ -152,6 +163,7 @@ def _is_quote(block_text):
             all_quotes = True
     return all_quotes
     
+# markdown_to_blocks -> Helper
 def _is_unordered_list(block_text):
     ul_tag = "- "
     u_list = True
@@ -160,6 +172,7 @@ def _is_unordered_list(block_text):
             u_list =  False
     return u_list
     
+# markdown_to_blocks -> Helper
 def _is_ordered_list(block_text):
     o_list = True
     raw_list = block_text.split("\n")
@@ -168,4 +181,68 @@ def _is_ordered_list(block_text):
         if not (raw_list[ol_items].startswith(ol_tag)):
             o_list =  False
     return o_list
+ 
+#Converts markdown text into HTML syntax
+def markdown_to_html_node(markdown):
+    blocks_from_markdown = markdown_to_blocks(markdown)
+    parent_nodes = []
     
+    for block in blocks_from_markdown:
+        if (block_to_block_type(block) == BlockType.PARAGRAPH):
+            children = convert_text(text_to_textnodes(block))
+            parent_nodes.append(ParentNode("p", children))
+        elif (block_to_block_type(block) == BlockType.HEADING):
+            parent_nodes.append(convert_heading(block))
+        elif (block_to_block_type(block) == BlockType.CODE):
+            parent_nodes.append(convert_code(block))
+        elif (block_to_block_type(block) == BlockType.QUOTE):
+            parent_nodes.append(convert_quote(block))
+        elif (block_to_block_type(block) == BlockType.UNORDERED_LIST):
+            parent_nodes.append(convert_unordered(block))
+        elif (block_to_block_type(block) == BlockType.ORDERED_LIST):
+            parent_nodes.append(convert_ordered(block))
+        else:
+            print("Some error occurred!!!")
+    return ParentNode("div", parent_nodes)
+    
+# markdown_to_html_node -> Helper
+def convert_text(old_nodes):
+    new_nodes = []
+    for child in old_nodes:
+        new_nodes.append(text_node_to_html_node(child))
+    return new_nodes
+    
+# markdown_to_html_node -> Helper
+def convert_heading(old_nodes):
+    level = old_nodes.count("#")
+    text = old_nodes.replace("#","")
+    return LeafNode(f"h{level}", text)
+    
+# markdown_to_html_node -> Helper
+def convert_quote(old_nodes):
+    text = old_nodes.replace(">","")
+    return LeafNode("blockquote", text)
+
+# markdown_to_html_node -> Helper
+def convert_code(old_nodes):
+    text = (old_nodes.replace("```\n","")).replace("```","")
+    return ParentNode("pre", [LeafNode("code", text)])
+
+# markdown_to_html_node -> Helper
+def convert_unordered(old_nodes):
+    ul_items = old_nodes.split("\n")
+    children = []
+    for item_u in ul_items:
+        text = item_u.replace("- ","")
+        children.append(LeafNode("li", text))
+    return ParentNode("ul", children)
+
+# markdown_to_html_node -> Helper
+def convert_ordered(old_nodes):
+    ol_items = old_nodes.split("\n")
+    children = []
+    for item_o in ol_items:
+        children.append(LeafNode("li", item_o))
+    return ParentNode("ol", children)
+
+#
