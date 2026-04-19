@@ -1,43 +1,33 @@
-from htmlnode import HTMLNode, LeafNode, ParentNode
-from textnode import TextNode, TextType
-from extrator import markdown_to_html_node
+import os
+import shutil
+
+def copy_file_content(from_directory, directory, to_directory):
+    try:
+        from_dir = os.path.abspath(from_directory)
+        from_name = os.path.normpath(os.path.join(from_dir, directory))
+        
+        to_dir = os.path.abspath(to_directory)
+        to_name = os.path.normpath(os.path.join(to_dir, directory))
+        
+        if (not os.path.isdir(from_name)) or (not os.path.isdir(to_name)):
+            return f'Error: "{directory}" is not a directory'
+    
+        shutil.rmtree(to_name)
+        os.mkdir(to_name)
+        
+        for _file in os.listdir(from_name):
+            src_file = os.path.join(from_name, _file)
+            if os.path.isfile(src_file):
+                shutil.copy(src_file,to_name)
+            else:
+                copy_file_content(src_file,to_name)
+                
+        return os.listdir(to_name)
+        
+    except Exception as e:
+        return (f"Error: {e}")
+
 
 def main():
-    markdown1 = """
-This is **bolded** paragraph
-text in a p
-tag here
-
-This is another paragraph with _italic_ text and `code` here
-This is text with a link [to boot dev](https://www.boot.dev) an image ![second image](https://i.imgur.com/3elNhQu.png)
-
-"""
-
-    markdown2 = """
-This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)
-
-> And this is a qoute
-
-### Hastag Headings
-
-- This is some list
-- with some items
-"""
-
-    markdown3 = """
-```
-This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
-```
-
-1. This is a list
-2. with exactly 
-3. 3 items
-"""
-    print((markdown_to_html_node(markdown1)).to_html())
-    print("\n")
-    print((markdown_to_html_node(markdown2)).to_html())
-    print("\n")
-    print((markdown_to_html_node(markdown3)).to_html())
-
+    print(copy_file_content("static", ".", "public"))
 main()
