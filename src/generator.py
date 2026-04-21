@@ -28,7 +28,6 @@ def copy_file_content(from_directory, directory, to_directory):
         shutil.rmtree(to_name)
         os.mkdir(to_name)
         file_transfers(from_name, to_name)
-        
     except Exception as e:
         return (f"Error: {e}")
 
@@ -83,9 +82,12 @@ def replace_content(original, rep_Title, rep_Content):
 # generate_page -> Helper 
 def write_content(pathname, data):
     try:
+        valid_dir = pathname.replace("/index.html","")
+        if not os.path.isdir(valid_dir):
+            os.makedirs(valid_dir)
         with open(pathname, "w") as f:
             f.write(data)
         return f'Successfully wrote to "{pathname}" ({len(data)} characters)'
     except Exception as err:
-        return f"Error: {err} has occurred!"   
+        return f"Error: {err}!"   
 
