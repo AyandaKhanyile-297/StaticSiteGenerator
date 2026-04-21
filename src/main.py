@@ -1,22 +1,9 @@
-from generator import copy_file_content, extract_title
+from generator import copy_file_content, extract_title, generate_page
 
 def main():
-    #copy_file_content("static", ".", "public")
-    markdown = """
-# Tolkien Fan Club
-
-![JRR Tolkien sitting](/images/tolkien.png)
-
-Here's the deal, **I like Tolkien**.
-
-> "I am in fact a Hobbit in all but size."
->
-> -- J.R.R. Tolkien
-
-## Blog posts
-"""
+    copy_file_content("static", ".", "public")
     try:
-        extract_title(markdown)
+        generate_page("content/index.md", "template.html", "public/index.html")
     except Exception as e:
         print(e)
 main()

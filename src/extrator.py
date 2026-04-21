@@ -215,12 +215,12 @@ def convert_text(old_nodes):
 # markdown_to_html_node -> Helper
 def convert_heading(old_nodes):
     level = old_nodes.count("#")
-    text = old_nodes.replace("#","")
+    text = old_nodes.replace("# ","")
     return LeafNode(f"h{level}", text)
     
 # markdown_to_html_node -> Helper
 def convert_quote(old_nodes):
-    text = old_nodes.replace(">","")
+    text = old_nodes.replace("> ","")
     return LeafNode("blockquote", text)
 
 # markdown_to_html_node -> Helper
@@ -234,7 +234,12 @@ def convert_unordered(old_nodes):
     children = []
     for item_u in ul_items:
         text = item_u.replace("- ","")
-        children.append(LeafNode("li", text))
+        unordered_items = text_to_textnodes(text)
+        line = ""
+        for unordered_item in unordered_items:
+            finalized_item = text_node_to_html_node(unordered_item)
+            line += finalized_item.to_html()
+        children.append(LeafNode("li", line))
     return ParentNode("ul", children)
 
 # markdown_to_html_node -> Helper
@@ -242,7 +247,9 @@ def convert_ordered(old_nodes):
     ol_items = old_nodes.split("\n")
     children = []
     for item_o in ol_items:
-        children.append(LeafNode("li", item_o))
+        #remove numbering
+        text = item_o[3::]
+        children.append(LeafNode("li", text))
     return ParentNode("ol", children)
 
 #
