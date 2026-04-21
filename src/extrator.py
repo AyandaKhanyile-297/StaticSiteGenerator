@@ -249,7 +249,12 @@ def convert_ordered(old_nodes):
     for item_o in ol_items:
         #remove numbering
         text = item_o[3::]
-        children.append(LeafNode("li", text))
+        ordered_items = text_to_textnodes(text)
+        line = ""
+        for ordered_item in ordered_items:
+            finalized_item = text_node_to_html_node(ordered_item)
+            line += finalized_item.to_html()
+        children.append(LeafNode("li", line))
     return ParentNode("ol", children)
 
 #

@@ -45,7 +45,7 @@ def extract_title(markdown):
         raise Exception("No valid title!")
     return markdown_title
    
-# Generates a webpage using a markdown file and template
+# Generates a webpage using a markdown file and template (generate_pages_recursive -> Helper)
 def generate_page(from_path, template_path, dest_path):
     from_dir = os.path.abspath(from_path)
     temp_dir = os.path.abspath(template_path)
@@ -87,7 +87,17 @@ def write_content(pathname, data):
             os.makedirs(valid_dir)
         with open(pathname, "w") as f:
             f.write(data)
-        return f'Successfully wrote to "{pathname}" ({len(data)} characters)'
+        return f'Successfully wrote to "{pathname}".'
     except Exception as err:
         return f"Error: {err}!"   
-
+        
+# Generates a webpages using a directory of markdown file and a template
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for directory in os.listdir(dir_path_content):
+        from_filepath = os.path.join(dir_path_content, directory)
+        if os.path.isfile(from_filepath):
+            dest_filepath = os.path.join(dest_dir_path, "index.html")
+            generate_page(from_filepath, template_path, dest_filepath)
+        else:
+            dest_filepath = os.path.join(dest_dir_path, directory)
+            generate_pages_recursive(from_filepath, template_path, dest_filepath)
