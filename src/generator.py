@@ -46,7 +46,7 @@ def extract_title(markdown):
     return markdown_title
    
 # Generates a webpage using a markdown file and template (generate_pages_recursive -> Helper)
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     from_dir = os.path.abspath(from_path)
     temp_dir = os.path.abspath(template_path)
     dest_dir = os.path.abspath(dest_path)
@@ -59,6 +59,9 @@ def generate_page(from_path, template_path, dest_path):
     ext_title = extract_title(contents_src)
     converted_markdown = (markdown_to_html_node(contents_src)).to_html()
     contents_dest = replace_content(contents_temp, ext_title, converted_markdown)
+
+    contents_dest = contents_dest.replace("href=\"/", f"href=\"{basepath}")
+    contents_dest = contents_dest.replace("src=\"/", f"src=\"{basepath}")
     
     print(write_content(dest_dir, contents_dest))  
 
@@ -92,12 +95,12 @@ def write_content(pathname, data):
         return f"Error: {err}!"   
         
 # Generates a webpages using a directory of markdown file and a template
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, newBasepath="/"):
     for directory in os.listdir(dir_path_content):
         from_filepath = os.path.join(dir_path_content, directory)
         if os.path.isfile(from_filepath):
             dest_filepath = os.path.join(dest_dir_path, "index.html")
-            generate_page(from_filepath, template_path, dest_filepath)
+            generate_page(from_filepath, template_path, dest_filepath, newBasepath)
         else:
             dest_filepath = os.path.join(dest_dir_path, directory)
-            generate_pages_recursive(from_filepath, template_path, dest_filepath)
+            generate_pages_recursive(from_filepath, template_path, dest_filepath, newBasepath)
