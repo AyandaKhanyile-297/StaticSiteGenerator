@@ -62,6 +62,8 @@ def generate_page(from_path, template_path, dest_path, basepath):
 
     contents_dest = contents_dest.replace("href=\"/", f"href=\"{basepath}")
     contents_dest = contents_dest.replace("src=\"/", f"src=\"{basepath}")
+    contents_dest = contents_dest.replace("href=/", f"href={basepath}")
+    contents_dest = contents_dest.replace("src=/", f"src={basepath}")
     
     print(write_content(dest_dir, contents_dest))  
 
