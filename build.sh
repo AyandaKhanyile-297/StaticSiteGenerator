@@ -1,1 +1,1 @@
-python3 src/main.py "/AyandaKhanyile-297/StaticSiteGenerator/"
+python3 src/main.py "/AyandaKhanyile-297/StaticSiteGenerator/docs/"
